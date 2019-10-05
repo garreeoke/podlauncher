@@ -21,6 +21,7 @@ var image = flag.String("image", "", "docker image registry location")
 var namespace = flag.String("namespace", "default", "namespace, default is default")
 var ports = flag.String("ports", "", "ports, comma separated, either range 1-10 or single port #")
 var lbtype = flag.String("lbtype", "ClusterIP", "Type of service, LoadBalancer, NodePort, or ClusterIP")
+//var delete = flag.Bool("delete", false, "Use to delete instead of create")
 
 func main() {
 
@@ -111,22 +112,25 @@ func main() {
 		}
 
 		// This will loop forever ... kill at command line if no ip found
-		for len(svc.Status.LoadBalancer.Ingress) == 0 {
-			time.Sleep(time.Second * 1)
-			svc, err = k8s.CoreV1().Services(*namespace).Get(name, metav1.GetOptions{})
-			if err != nil {
-				log.Fatalln("Unable to get service: ")
+		if svc.Spec.Type == apiv1.ServiceTypeLoadBalancer {
+			for len(svc.Status.LoadBalancer.Ingress) == 0 {
+				time.Sleep(time.Second * 1)
+				svc, err = k8s.CoreV1().Services(*namespace).Get(name, metav1.GetOptions{})
+				if err != nil {
+					log.Fatalln("Unable to get service: ")
+				}
 			}
+
+			for svc.Status.LoadBalancer.Ingress[0].IP == "" {
+				log.Println("No IP found for service " + name + " trying again")
+				svc, err = k8s.CoreV1().Services(*namespace).Get(name, metav1.GetOptions{})
+				if err != nil {
+					log.Fatalln("Unable to get service: ")
+				}
+			}
+			log.Println(name+" IP Address: ", svc.Status.LoadBalancer.Ingress[0].IP)
 		}
 
-		for svc.Status.LoadBalancer.Ingress[0].IP == "" {
-			log.Println("No IP found for service " + name + " trying again")
-			svc, err = k8s.CoreV1().Services(*namespace).Get(name, metav1.GetOptions{})
-			if err != nil {
-				log.Fatalln("Unable to get service: ")
-			}
-		}
-		log.Println(name+" IP Address: ", svc.Status.LoadBalancer.Ingress[0].IP)
 	}
 }
 
