@@ -11,15 +11,15 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
-
 
 var prefix = flag.String("prefix", "", "prefix for pod/container name")
 var num = flag.Int("num", 1, "number of pods/containers to create")
 var image = flag.String("image", "", "docker image registry location")
 var namespace = flag.String("namespace", "default", "namespace, default is default")
-var port = flag.Int("port", 0, "port to expose for the service")
+var ports = flag.String("ports", "", "ports, comma separated, either range 1-10 or single port #")
 
 func main() {
 
@@ -38,7 +38,7 @@ func main() {
 			Spec: apiv1.PodSpec{
 				Containers: []apiv1.Container{
 					{
-						Name: name,
+						Name:  name,
 						Image: *image,
 					},
 				},
@@ -52,21 +52,46 @@ func main() {
 		// Submit pod to kubernetes
 		pod, err = k8s.CoreV1().Pods(*namespace).Create(pod)
 		if err != nil {
-			log.Fatalln("Cannot create pod " + name + " ", err)
+			log.Fatalln("Cannot create pod "+name+" ", err)
 		}
 		// Create the service
+
+		// Create service ports to use based on first and last
+		// Convert string to numbers
+		portsToUse := strings.Split(*ports, ",")
+		servicePorts := []apiv1.ServicePort{}
+		for _, p := range portsToUse {
+			r := strings.Split(p, "-")
+			var a int
+			var b int
+			if len(r) > 0 {
+				if len(r) >= 1 {
+					a, _ = strconv.Atoi(r[0])
+				}
+				if len(r) == 2 {
+					b, _ = strconv.Atoi(r[1])
+				} else {
+					b = a
+				}
+			}
+
+			for a <= b {
+				sp := apiv1.ServicePort{
+					Name: "port" + strconv.Itoa(a),
+					Port: int32(a),
+				}
+				servicePorts = append(servicePorts, sp)
+				a++
+			}
+		}
+
 		svc := &apiv1.Service{
 			Spec: apiv1.ServiceSpec{
 				Selector: map[string]string{
 					"app": name,
 				},
-				Ports: []apiv1.ServicePort{
-					{
-						Name: "web",
-						Port: int32(*port),
-					},
-				},
-				Type: apiv1.ServiceTypeLoadBalancer,
+				Ports: servicePorts,
+				Type:  apiv1.ServiceTypeLoadBalancer,
 			},
 		}
 		svc.Name = name
@@ -74,7 +99,7 @@ func main() {
 		// Submit service to kubernetes
 		svc, err = k8s.CoreV1().Services(*namespace).Create(svc)
 		if err != nil {
-			log.Fatalln("Cannot create service " + name + " ", err)
+			log.Fatalln("Cannot create service "+name+" ", err)
 		}
 
 		// This will loop forever ... kill at command line if no ip found
@@ -82,7 +107,7 @@ func main() {
 			time.Sleep(time.Second * 1)
 			svc, err = k8s.CoreV1().Services(*namespace).Get(name, metav1.GetOptions{})
 			if err != nil {
-				log.Fatalln("Unable to get service: ", )
+				log.Fatalln("Unable to get service: ")
 			}
 		}
 
@@ -90,14 +115,14 @@ func main() {
 			log.Println("No IP found for service " + name + " trying again")
 			svc, err = k8s.CoreV1().Services(*namespace).Get(name, metav1.GetOptions{})
 			if err != nil {
-				log.Fatalln("Unable to get service: ", )
+				log.Fatalln("Unable to get service: ")
 			}
 		}
-		log.Println(name + " IP Address: ", svc.Status.LoadBalancer.Ingress[0].IP)
+		log.Println(name+" IP Address: ", svc.Status.LoadBalancer.Ingress[0].IP)
 	}
 }
 
-func GetK8Client() (*kubernetes.Clientset,error) {
+func GetK8Client() (*kubernetes.Clientset, error) {
 
 	var config *rest.Config
 	var err error
@@ -117,7 +142,7 @@ func GetK8Client() (*kubernetes.Clientset,error) {
 	// Create client set
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return clientset,err
+		return clientset, err
 	}
 
 	return clientset, nil
