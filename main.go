@@ -20,6 +20,7 @@ var num = flag.Int("num", 1, "number of pods/containers to create")
 var image = flag.String("image", "", "docker image registry location")
 var namespace = flag.String("namespace", "default", "namespace, default is default")
 var ports = flag.String("ports", "", "ports, comma separated, either range 1-10 or single port #")
+var lbtype = flag.String("lbtype", "ClusterIP", "Type of service, LoadBalancer, NodePort, or ClusterIP")
 
 func main() {
 
@@ -91,8 +92,15 @@ func main() {
 					"app": name,
 				},
 				Ports: servicePorts,
-				Type:  apiv1.ServiceTypeLoadBalancer,
 			},
+		}
+		switch *lbtype {
+		case "LoadBalancer":
+			svc.Spec.Type = apiv1.ServiceTypeLoadBalancer
+		case "NodePort":
+			svc.Spec.Type = apiv1.ServiceTypeNodePort
+		default:
+			svc.Spec.Type = apiv1.ServiceTypeClusterIP
 		}
 		svc.Name = name
 		svc.Labels = svc.Spec.Selector
