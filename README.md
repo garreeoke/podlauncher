@@ -1,8 +1,8 @@
 podlauncher
 ---
 
-Quick tool written for a customer to launch similar pods quickly using K8s api that will
-have their own dedicated K8s services and possibly multiple ports.
+Quick tool written to launch identical pods quickly using K8s api that will
+have their own dedicated K8s services and possibly multiple ports.  Mainly used for testing.
 
 Flags
 ---
