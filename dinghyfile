@@ -9,6 +9,8 @@
         "stages": [
             {{ module "wait.stage.module" "waitTime" 99 "name" "wait-for-me-again-dude" }}
         ],
-        "triggers": []
+        "triggers": [
+            {{ module "garreeoke.trigger.module" "slug" "oppsie" }}
+        ]
 	}]
 }
