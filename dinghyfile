@@ -1,4 +1,7 @@
 {
 	"application": "podlauncher",
-	"pipelines": []
+	"pipelines": [{
+	    "application": "podlauncher",
+	    "name": "podlauncher-pipe1"
+	}]
 }
