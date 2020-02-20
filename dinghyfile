@@ -1,18 +1,5 @@
 {
 	"application": "podlauncher",
-	"pipelines": [{
-		"application": "podlauncher",
-		"name": "podlauncher-pipe1",
-		"keepWaitingPipelines": false,
-		"limitConcurrent": true,
-		"stages": [],
-		"triggers": [{
-			"branch": "master",
-			"enabled": true,
-			"project": "garreeoke",
-			"slug": "podlauncher",
-			"source": "github",
-			"type": "git"
-		}],
-	}]
+	"pipelines": [],
+	]
 }
