@@ -1,5 +1,6 @@
 {
 	"application": "podlauncher",
+	"owner": "aaron.torgerson@armory.io",
 	"pipelines": [{
 	    "application": "podlauncher",
 	    "name": "podlauncher-pipe1"
