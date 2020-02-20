@@ -7,7 +7,7 @@
 	    "keepWaitingPipelines": false,
         "limitConcurrent": true,
         "stages": [
-            {{ module "wait.stage.module" "waitTime" 200 "name" "wait-for-me-again" }}
+            {{ module "wait.stage.module" "waitTime" 10 "name" "wait-for-me-again" }}
         ],
         "triggers": []
 	}]
