@@ -7,13 +7,8 @@
 	    "keepWaitingPipelines": false,
         "limitConcurrent": true,
         "stages": [],
-        "triggers": [{
-        	"branch": "master",
-        	"enabled": true,
-        	"project": "garreeoke",
-        	"slug": "podlauncher",
-        	"source": "github",
-        	"type": "git"
-        }]
+        "triggers": [
+            {{ module "garreeoke.trigger.module" "slug" "opps" }}
+        ]
 	}]
 }
