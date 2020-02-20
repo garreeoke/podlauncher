@@ -6,7 +6,9 @@
 	    "name": "podlauncher-pipe1",
 	    "keepWaitingPipelines": false,
         "limitConcurrent": true,
-        "stages": [],
+        "stages": [
+            {{ module "wait.stage.module" "waitTime" 200 }}
+        ],
         "triggers": []
 	}]
 }
